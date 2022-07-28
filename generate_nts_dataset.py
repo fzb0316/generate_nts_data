@@ -71,11 +71,18 @@ def extract_dataset(args):
         labels = data.labels
         graph = data.graph[0]
         features = graph.dstdata['feat']
-        edges_list = graph.edges
-
+        
         train_mask = split_idx['train']
         val_mask = split_idx['valid']
         test_mask = split_idx['test']
+
+        edges = graph.edges()
+        edge_src = edges[0].numpy().reshape((-1,1))
+        edge_dst = edges[1].numpy().reshape((-1,1))
+        edges_list = np.hstack((edge_src, edge_dst))
+
+        if args.self_loop:
+            edges_list = insert_self_loop(edges_list)
 
         return edges_list, features, labels, train_mask, val_mask, test_mask
         
@@ -146,7 +153,7 @@ def generate_nts_dataset(args, edge_list, features, labels, train_mask, val_mask
     pre_path = os.getcwd() + '/' + dataset
 
     # edgelist
-    # write_to_file(pre_path + '.edgelist', edge_list, "%d")
+    write_to_file(pre_path + '.edgelist', edge_list, "%d")
 
     # edge_list binary format (gemini)
     # edge2bin(pre_path + '.edge', edge_list)
